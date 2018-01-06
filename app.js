@@ -1,8 +1,8 @@
 // Set up chart
-var svgWidth = 960;
+var svgWidth = 900  ;
 var svgHeight = 500;
 
-var margin = {top: 20, right: 40, bottom: 80, left:100};
+var margin = {top: 20, right: 40, bottom: 80, left:10};
 
 var width = svgWidth - margin.left - margin.right;
 var height = svgHeight - margin.top - margin.bottom;
@@ -27,10 +27,15 @@ d3.select(".chart")
     .style("opacity", 0);
 
 // Retrieve data from the CSV file
-d3.csv("data.csv", function(error, data) {
+d3.csv("data.csv", function(error, csvdata) {
+
+    for (var i = 0; i < csvdata.length; i++){
+        // console.log(data.abbr);
+        console.log(csvdata[i].abbr)
+    }
     if (error) throw error;
 
-    data.forEach(function(d) {
+    csvdata.forEach(function(d) {
         d.poverty = +d.poverty;
         d.healthcare = +d.healthcare;        
     });
@@ -48,15 +53,15 @@ d3.csv("data.csv", function(error, data) {
     var leftAxis = d3.axisLeft(yLinearScale);
 
     function findMinAndMax(dataColumnX) {
-        xMin = d3.min(data, function(d) {
+        xMin = d3.min(csvdata, function(d) {
             return +d[dataColumnX] * 0.8;
         });
 
-        xMax =  d3.max(data, function(d) {
+        xMax =  d3.max(csvdata, function(d) {
             return +d[dataColumnX] * 1.1;
         });
 
-        yMax = d3.max(data, function(d) {
+        yMax = d3.max(csvdata, function(d) {
             return +d.healthcare * 1.1;
         });
     }
@@ -82,21 +87,9 @@ d3.csv("data.csv", function(error, data) {
 
     chart.call(toolTip);
 
-    chart
-        .selectAll("circle")
-        .data(data)
-        .enter()
-        .append("circle")
-        .attr("cx", function(d, index) {
-            return xLinearScale(+d[currentAxisLabelX]);
-        })
-        .attr("cy", function(d, index) {
-            return yLinearScale(d.healthcare);
-        })
-        .attr("r", "15")
-        .style("fill","lightblue") 
-        .style("opacity", .9)
-        .style("stroke-width", ".2")
+
+
+
 
     // Append an SVG group for the x-axis, then display the x-axis
     chart
@@ -131,16 +124,31 @@ d3.csv("data.csv", function(error, data) {
     .attr("data-axis-name", "poverty")
     .text("In Poverty (%)");
 
-    // Append text in circles
-    chart.selectAll("text")
-        .data(data)
+    var circles = chart.selectAll(".state")
+        .data(csvdata)
         .enter()
-        .append("text")
-        .attr("x", function(d, index) {
+
+    circles
+        .append("circle")
+        .attr("class", "state")  
+        .attr("cx", function(d, index) {
             return xLinearScale(+d[currentAxisLabelX]);
         })
-        .attr("y", function(d, index) {
+        .attr("cy", function(d, index) {
             return yLinearScale(d.healthcare);
+        })
+        .attr("r", "15")
+        .style("fill","lightblue") 
+        .style("opacity", .9)
+        .style("stroke-width", ".2");
+    
+    circles
+        .append("text")
+        .attr("x", function(d, index) {
+            return xLinearScale(+d[currentAxisLabelX]- 0.08);
+        })
+        .attr("y", function(d, index) {
+            return yLinearScale(d.healthcare - 0.2);
         })
         .text(function(d){
             return d.abbr;
@@ -153,5 +161,45 @@ d3.csv("data.csv", function(error, data) {
         // onmouseout event
         .on("mouseout", function(d, index) {
           toolTip.hide(d);
-        });             
+        });         
+
+    // chart
+    //     .selectAll("circle")
+    //     .data(csvdata)
+    //     .enter()
+    //     .append("circle")
+    //     .attr("cx", function(d, index) {
+    //         return xLinearScale(+d[currentAxisLabelX]);
+    //     })
+    //     .attr("cy", function(d, index) {
+    //         return yLinearScale(d.healthcare);
+    //     })
+    //     .attr("r", "15")
+    //     .style("fill","lightblue") 
+    //     .style("opacity", .9)
+    //     .style("stroke-width", ".2")
+
+    // Append text in circles
+    // chart.selectAll("text")
+    //     .data(csvdata)
+    //     .enter()
+    //     .append("text")
+    //     .attr("x", function(d, index) {
+    //         return xLinearScale(+d[currentAxisLabelX]- 0.08);
+    //     })
+    //     .attr("y", function(d, index) {
+    //         return yLinearScale(d.healthcare - 0.2);
+    //     })
+    //     .text(function(d){
+    //         return d.abbr;
+    //     })
+    //     .attr("class", "circleText")
+    //     // add listeners on text too since it is on top of circle
+    //     .on("mouseover", function(d) {
+    //       toolTip.show(d);
+    //     })
+    //     // onmouseout event
+    //     .on("mouseout", function(d, index) {
+    //       toolTip.hide(d);
+    //     });             
 });
